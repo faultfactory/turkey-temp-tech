@@ -3,6 +3,7 @@ import dash
 from dash.dependencies import Output, Input
 from dash import dcc
 from dash import html
+import dash_daq as daq
 import plotly
 import random
 import plotly.graph_objs as go
@@ -24,7 +25,8 @@ lowSpeedIntervalMS = 5000
 highSpeedIntervalMS = 200
 
 
-app = dash.Dash(__name__)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # app.layout = html.Div(
 # 	[	html.Label('Thigh'),
@@ -47,49 +49,62 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
 	[html.H1(children='Turkey Vision 3000'),
-	html.H3(children="FriendsgivingTech Advanced Development Group"),
+	html.H6(children="Oh boy!"),
     # All elements from the top of the page
     html.Div([
         html.Div([
-            html.H1(children='Thigh Temperature - High Speed Trace'),
-
-            html.Div(children='''
-                Dash: A web application framework for Python.
-            '''),
-
+            html.H4(children='Thigh Temperature - High Speed Trace'),
+            html.Div([
+            daq.Thermometer(
+                min=50,
+                max=200,
+                value=100,
+                height=400,
+                showCurrentValue=True,
+                units="F",
+            )], style={'vertical_align': 'center'},className='one column'), 
+            html.Div([
             dcc.Graph(
-                id='graph1',
-				animate = True
+                id='thigh-graph',
+				animate = True,
             ),
 			dcc.Interval(
-			id = 'fast-update',
+			id = 'thigh_fast',
 			interval = 1000,
 			n_intervals = 0
-		)  
-        ], className='six columns'),
+            ), 
+            ], )
+        ],  className='six columns'),
+
         html.Div([
-            html.H1(children='Hello Dash'),
-
-            html.Div(children='''
-                Dash: A web application framework for Python.
-            '''),
-
+            html.H4(children='Breast Temperature - High Speed Trace'),
+            html.Div([
+            daq.Thermometer(
+                min=50,
+                max=200,
+                value=100,
+                height=400,
+                showCurrentValue=True,
+                units="F",
+            )], style={'vertical_align': 'center'},className='one column'), 
+            html.Div([
             dcc.Graph(
-                id='graph2',
-				animate = True
-            ),  
-        ], className='six columns'),
+                id='breast-graph',
+				animate = True,
+            ),
+			dcc.Interval(
+			id = 'breast_fast',
+			interval = 1000,
+			n_intervals = 0
+            ), 
+            ], )
+        ],  className='six columns'),
     ], className='row'),
     # New Div for all elements in the new 'row' of the page
     html.Div([
-        html.H1(children='Hello Dash'),
-
-        html.Div(children='''
-            Dash: A web application framework for Python.
-        '''),
-
+        html.H4(children='Long Term Temperature Trend for Turkey'),
         dcc.Graph(
-            id='graph3',
+            id='long-term',
 			animate = True
         ),
 		  
@@ -98,7 +113,9 @@ app.layout = html.Div(
 
 @app.callback(
 	Output('thigh-graph', 'figure'),
-	[ Input('slow-update', 'n_intervals') ]
+	[ Input('thigh_fast', 'n_intervals') ],
+    Output('breast-graph', 'figure'),
+	[ Input('breast_fast', 'n_intervals') ]
 )
 
 def update_graph_scatter(n):
