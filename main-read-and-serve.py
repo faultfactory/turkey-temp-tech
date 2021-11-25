@@ -9,7 +9,7 @@ import plotly
 import random
 import plotly.graph_objects as go
 from collections import deque
-import pandas as pd
+from mcp9600 import MCP9600 
 
 
 lowSpeed_thigh = deque(maxlen = 600)
@@ -22,6 +22,14 @@ highSpeed_timeline= deque(maxlen = 30)
 
 lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
+offlineDebug = False
+
+if not offlineDebug:
+    thighProbe = MCP9600(i2c_addr=0x66)
+    thighProbe.set_thermocouple_type('K')
+    breastProbe = MCP9600(i2c_addr=0x60)
+    breastProbe.set_thermocouple_type('K')
+
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
@@ -29,25 +37,6 @@ def truncate(num, n):
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
-# app.layout = html.Div(
-# 	[	html.Label('Thigh'),
-# 		dcc.Graph(id = 'thigh-graph', animate = True),
-# 		dcc.Interval(
-# 			id = 'slow-update',
-# 			interval = 1000,
-# 			n_intervals = 0
-# 		)
-# 	],
-# 	[ 	html.Label('Breast'),
-# 		dcc.Graph(id = 'breast-graph', animate = True),
-		# dcc.Interval(
-		# 	id = 'fast-update',
-		# 	interval = 1000,
-		# 	n_intervals = 0
-		# )
-# 	]
-# )
 
 app.layout = html.Div(
 	[html.H1(children='Turkey Vision 3000'),
@@ -113,18 +102,23 @@ app.layout = html.Div(
     Output('breast_indicator', 'value')],[
 	Input('fast', 'n_intervals')])
 def update_fast_elements(n):
-    offlineDebug = True
+
     updateSlow = n%lowSpeedIntervalMultiplier==0   
 
     if offlineDebug:
         highSpeed_thigh.append(1+random.uniform(-0.1,0.1))
         highSpeed_breast.append(1+random.uniform(-0.1,0.1))
         highSpeed_timeline.append(datetime.now())
-        if(updateSlow):
-            lowSpeed_breast.append(highSpeed_breast[-1])
-            lowSpeed_thigh.append(highSpeed_thigh[-1])
-            lowSpeed_timeline.append(highSpeed_timeline[-1])
+    else:
+        highSpeed_thigh.append(thighProbe.get_hot_junction_temperature())
+        highSpeed_breast.append(breastProbe.get_hot_junction_temperature())
+        highSpeed_timeline.append(datetime.now())
 
+
+    if(updateSlow):
+        lowSpeed_breast.append(highSpeed_breast[-1])
+        lowSpeed_thigh.append(highSpeed_thigh[-1])
+        lowSpeed_timeline.append(highSpeed_timeline[-1])
 
 
     thigh_fig = go.Figure(data=go.Scatter(
