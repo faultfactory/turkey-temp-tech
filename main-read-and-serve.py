@@ -18,9 +18,13 @@ highSpeed_thigh = deque(maxlen = 30)
 highSpeed_breast = deque(maxlen = 30)
 highSpeed_timeline= deque(maxlen = 30)
 
+lowSpeed_thigh = deque(maxlen = 600)
+lowSpeed_breast = deque(maxlen = 600)
+lowSpeed_timeline = deque(maxlen = 600)
+
 lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
-offlineDebug = False
+offlineDebug = True
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
@@ -37,14 +41,17 @@ class DashThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.lowSpeed_thigh = deque(maxlen = 600)
-        self.lowSpeed_breast = deque(maxlen = 600)
-        self.lowSpeed_timeline = deque(maxlen = 600)
+
 
     def run(self):
         global highSpeed_thigh
         global highSpeed_breast
         global highSpeed_timeline
+        global highSpeedIntervalMS
+        global lowSpeedIntervalMultiplier
+        global lowSpeed_breast
+        global lowSpeed_thigh
+        global lowSpeed_timeline
         app.layout = html.Div(
             [html.H1(children='Turkey Vision 3000'),
             # All elements from the top of the page
@@ -167,7 +174,6 @@ class ThermoCoupleThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.counter = lowSpeedIntervalMultiplier
         if not offlineDebug:
             self.thighProbe = MCP9600(i2c_addr=0x66)
             self.thighProbe.set_thermocouple_type('K')
@@ -183,6 +189,7 @@ class ThermoCoupleThread(threading.Thread):
         global lowSpeed_breast
         global lowSpeed_thigh
         global lowSpeed_timeline
+        global lowSpeedIntervalMultiplier
         while True:
             if offlineDebug:
                 highSpeed_thigh.append(1+random.uniform(-0.1,0.1))
@@ -194,14 +201,12 @@ class ThermoCoupleThread(threading.Thread):
                 highSpeed_timeline.append(datetime.now())
 
 
-            updateSlow = counter%lowSpeedIntervalMultiplier==0   
+            updateSlow = len(highSpeed_timeline)%lowSpeedIntervalMultiplier==0   
             if(updateSlow):
                 lowSpeed_breast.append(highSpeed_breast[-1])
                 lowSpeed_thigh.append(highSpeed_thigh[-1])
                 lowSpeed_timeline.append(highSpeed_timeline[-1])
-                self.counter=0
-            else:
-                self.counter = self.counter+1
+            
             time.sleep(1)
 
 
