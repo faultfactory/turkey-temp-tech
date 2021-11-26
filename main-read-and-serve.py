@@ -162,7 +162,7 @@ class DashThread(threading.Thread):
 
 
 
-s
+
 class ThermoCoupleThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
