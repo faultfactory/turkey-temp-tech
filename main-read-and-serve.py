@@ -18,6 +18,10 @@ highSpeed_thigh = deque(maxlen = 30)
 highSpeed_breast = deque(maxlen = 30)
 highSpeed_timeline= deque(maxlen = 30)
 
+lowSpeed_thigh = deque(maxlen = 600)
+lowSpeed_breast = deque(maxlen = 600)
+lowSpeed_timeline = deque(maxlen = 600)
+
 lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
 offlineDebug = False
@@ -37,14 +41,15 @@ class DashThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        self.lowSpeed_thigh = deque(maxlen = 600)
-        self.lowSpeed_breast = deque(maxlen = 600)
-        self.lowSpeed_timeline = deque(maxlen = 600)
+
 
     def run(self):
         global highSpeed_thigh
         global highSpeed_breast
         global highSpeed_timeline
+        global lowSpeed_breast
+        global lowSpeed_thigh
+        global lowSpeed_timeline
         app.layout = html.Div(
             [html.H1(children='Turkey Vision 3000'),
             # All elements from the top of the page
@@ -109,15 +114,6 @@ class DashThread(threading.Thread):
             Output('breast_indicator', 'value')],[
             Input('fast', 'n_intervals')])
         def update_fast_elements(n):
-
-            updateSlow = n%lowSpeedIntervalMultiplier==0   
-
-            if(updateSlow):
-                lowSpeed_breast.append(highSpeed_breast[-1])
-                lowSpeed_thigh.append(highSpeed_thigh[-1])
-                lowSpeed_timeline.append(highSpeed_timeline[-1])
-
-
             thigh_fig = go.Figure(data=go.Scatter(
                 x=list(highSpeed_timeline),
                 y=list(highSpeed_thigh),
@@ -144,9 +140,6 @@ class DashThread(threading.Thread):
             Input('slow', 'n_intervals'))
         def update_slow_elements(n):
 
-            # df = pd.DataFrame({'Time': lowSpeed_timeline,
-            #      'Thigh':lowSpeed_thigh,
-            #      'Breast': lowSpeed_breast})
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=list(lowSpeed_timeline),
@@ -175,6 +168,7 @@ class ThermoCoupleThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
+        self.counter = 0
         if not offlineDebug:
             self.thighProbe = MCP9600(i2c_addr=0x66)
             self.thighProbe.set_thermocouple_type('K')
@@ -187,6 +181,9 @@ class ThermoCoupleThread(threading.Thread):
         global highSpeed_thigh
         global highSpeed_breast
         global highSpeed_timeline
+        global lowSpeed_timeline
+        global lowSpeed_thigh
+        global lowSpeed_breast
         while True:
             if offlineDebug:
                 highSpeed_thigh.append(1+random.uniform(-0.1,0.1))
@@ -196,6 +193,12 @@ class ThermoCoupleThread(threading.Thread):
                 highSpeed_thigh.append(fahrenheit(self.thighProbe.get_hot_junction_temperature()))
                 highSpeed_breast.append(fahrenheit(self.breastProbe.get_hot_junction_temperature()))
                 highSpeed_timeline.append(datetime.now())
+            updateSlow = counter%lowSpeedIntervalMultiplier==0   
+            if(updateSlow):
+                lowSpeed_breast.append(highSpeed_breast[-1])
+                lowSpeed_thigh.append(highSpeed_thigh[-1])
+                lowSpeed_timeline.append(highSpeed_timeline[-1])
+            counter+=1
             time.sleep(1)
 
 
