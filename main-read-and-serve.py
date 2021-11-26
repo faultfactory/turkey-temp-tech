@@ -44,6 +44,7 @@ class DashThread(threading.Thread):
 
 
     def run(self):
+        global app
         global highSpeed_thigh
         global highSpeed_breast
         global highSpeed_timeline
