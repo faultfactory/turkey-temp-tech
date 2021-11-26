@@ -25,6 +25,11 @@ lowSpeed_timeline = deque(maxlen = 600)
 lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
 offlineDebug = False
+if not offlineDebug:
+    self.thighProbe = MCP9600(i2c_addr=0x66)
+    self.thighProbe.set_thermocouple_type('K')
+    self.breastProbe = MCP9600(i2c_addr=0x60)
+    self.breastProbe.set_thermocouple_type('K')   
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
@@ -174,11 +179,7 @@ class ThermoCoupleThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
         self.name = name
-        if not offlineDebug:
-            self.thighProbe = MCP9600(i2c_addr=0x66)
-            self.thighProbe.set_thermocouple_type('K')
-            self.breastProbe = MCP9600(i2c_addr=0x60)
-            self.breastProbe.set_thermocouple_type('K')   
+
 
 
     def run(self):
@@ -190,24 +191,30 @@ class ThermoCoupleThread(threading.Thread):
         global lowSpeed_thigh
         global lowSpeed_timeline
         global lowSpeedIntervalMultiplier
+        global thighProbe
+        global breastProbe
+
         while True:
-            if offlineDebug:
-                highSpeed_thigh.append(1+random.uniform(-0.1,0.1))
-                highSpeed_breast.append(1+random.uniform(-0.1,0.1))
-                highSpeed_timeline.append(datetime.now())
-            else:
-                highSpeed_thigh.append(fahrenheit(self.thighProbe.get_hot_junction_temperature()))
-                highSpeed_breast.append(fahrenheit(self.breastProbe.get_hot_junction_temperature()))
-                highSpeed_timeline.append(datetime.now())
-
-
-            updateSlow = len(highSpeed_timeline)%lowSpeedIntervalMultiplier==0   
-            if(updateSlow):
-                lowSpeed_breast.append(highSpeed_breast[-1])
-                lowSpeed_thigh.append(highSpeed_thigh[-1])
-                lowSpeed_timeline.append(highSpeed_timeline[-1])
+            firstLoop = True
+            for i in range(lowSpeedIntervalMultiplier):
+                if offlineDebug:
+                    highSpeed_thigh.append(1+random.uniform(-0.1,0.1))
+                    highSpeed_breast.append(1+random.uniform(-0.1,0.1))
+                    highSpeed_timeline.append(datetime.now())
+                else:
+                    highSpeed_thigh.append(fahrenheit(thighProbe.get_hot_junction_temperature()))
+                    highSpeed_breast.append(fahrenheit(breastProbe.get_hot_junction_temperature()))
+                    highSpeed_timeline.append(datetime.now())
+                if firstLoop:
+                    lowSpeed_breast.append(highSpeed_breast[-1])
+                    lowSpeed_thigh.append(highSpeed_thigh[-1])
+                    lowSpeed_timeline.append(highSpeed_timeline[-1])
+                    firstLoop = False
+                time.sleep(1)
             
-            time.sleep(1)
+        
+
+            
 
 
 a = DashThread("The Dash Application")
