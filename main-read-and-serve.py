@@ -176,10 +176,10 @@ class ThermoCoupleThread(threading.Thread):
         threading.Thread.__init__(self)
         self.name = name
         if not offlineDebug:
-        self.thighProbe = MCP9600(i2c_addr=0x66)
-        self.thighProbe.set_thermocouple_type('K')
-        self.breastProbe = MCP9600(i2c_addr=0x60)
-        self.breastProbe.set_thermocouple_type('K')   
+            self.thighProbe = MCP9600(i2c_addr=0x66)
+            self.thighProbe.set_thermocouple_type('K')
+            self.breastProbe = MCP9600(i2c_addr=0x60)
+            self.breastProbe.set_thermocouple_type('K')   
 
 
     def run(self):
