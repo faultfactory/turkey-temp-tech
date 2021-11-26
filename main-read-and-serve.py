@@ -26,10 +26,10 @@ lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
 offlineDebug = False
 if not offlineDebug:
-    self.thighProbe = MCP9600(i2c_addr=0x66)
-    self.thighProbe.set_thermocouple_type('K')
-    self.breastProbe = MCP9600(i2c_addr=0x60)
-    self.breastProbe.set_thermocouple_type('K')   
+    thighProbe = MCP9600(i2c_addr=0x66)
+    thighProbe.set_thermocouple_type('K')
+    breastProbe = MCP9600(i2c_addr=0x60)
+    breastProbe.set_thermocouple_type('K')   
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
