@@ -24,7 +24,7 @@ lowSpeed_timeline = deque(maxlen = 600)
 
 lowSpeedIntervalMultiplier = 10
 highSpeedIntervalMS = 1000
-offlineDebug = True
+offlineDebug = False
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
