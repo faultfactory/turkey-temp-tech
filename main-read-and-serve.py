@@ -193,8 +193,8 @@ class ThermoCoupleThread(threading.Thread):
                 highSpeed_breast.append(1+random.uniform(-0.1,0.1))
                 highSpeed_timeline.append(datetime.now())
             else:
-                highSpeed_thigh.append(fahrenheit(thighProbe.get_hot_junction_temperature()))
-                highSpeed_breast.append(fahrenheit(breastProbe.get_hot_junction_temperature()))
+                highSpeed_thigh.append(fahrenheit(self.thighProbe.get_hot_junction_temperature()))
+                highSpeed_breast.append(fahrenheit(self.breastProbe.get_hot_junction_temperature()))
                 highSpeed_timeline.append(datetime.now())
             time.sleep(1)
 
