@@ -119,11 +119,11 @@ class DashThread(threading.Thread):
                 y=list(highSpeed_thigh),
                 name='Scatter',
                 mode= 'lines+markers'))
-            thigh_fig.layout =  go.Layout(
+            thigh_fig.layout= go.Layout(
                         xaxis=dict(range=[min(highSpeed_timeline),max(highSpeed_timeline)]),
                         yaxis = dict(range = [min(highSpeed_thigh),max(highSpeed_thigh)]),)
 
-            breast_fig  =go.Figure(data=go.Scatter(
+            breast_fig =go.Figure(data=go.Scatter(
                 x=list(highSpeed_timeline),
                 y=list(highSpeed_breast),
                 name='Scatter',
@@ -139,7 +139,6 @@ class DashThread(threading.Thread):
             Output('long-term', 'figure'),
             Input('slow', 'n_intervals'))
         def update_slow_elements(n):
-
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=list(lowSpeed_timeline),
@@ -163,7 +162,7 @@ class DashThread(threading.Thread):
 
 
 
-
+s
 class ThermoCoupleThread(threading.Thread):
     def __init__(self, name):
         threading.Thread.__init__(self)
@@ -193,11 +192,13 @@ class ThermoCoupleThread(threading.Thread):
                 highSpeed_thigh.append(fahrenheit(self.thighProbe.get_hot_junction_temperature()))
                 highSpeed_breast.append(fahrenheit(self.breastProbe.get_hot_junction_temperature()))
                 highSpeed_timeline.append(datetime.now())
-            updateSlow = counter%lowSpeedIntervalMultiplier==0   
-            if(updateSlow):
-                lowSpeed_breast.append(highSpeed_breast[-1])
-                lowSpeed_thigh.append(highSpeed_thigh[-1])
-                lowSpeed_timeline.append(highSpeed_timeline[-1])
+            
+            # updateSlow = counter%lowSpeedIntervalMultiplier==0   
+            # if(updateSlow):
+            lowSpeed_breast.append(highSpeed_breast[-1])
+            lowSpeed_thigh.append(highSpeed_thigh[-1])
+            lowSpeed_timeline.append(highSpeed_timeline[-1])
+            
             counter+=1
             time.sleep(1)
 
